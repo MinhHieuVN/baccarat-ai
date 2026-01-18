@@ -2,168 +2,176 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Baccarat AI VIP</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baccarat AI VIP Lv3</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
 body{
-  background:#0b0f1a;
-  font-family:Arial, sans-serif;
+  margin:0;
+  background:#05080f;
+  font-family:Arial,Helvetica,sans-serif;
   color:#fff;
-  padding:20px;
 }
-#panel{
-  max-width:420px;
-  margin:auto;
-  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+
+/* ===== ROBOT ===== */
+#robot{
+  position:fixed;
+  right:15px;
+  bottom:15px;
+  width:90px;
+  height:120px;
+  background:linear-gradient(145deg,#111,#1e293b);
   border-radius:20px;
-  box-shadow:0 0 30px #00e5ff;
-  padding:20px;
+  box-shadow:0 0 25px #00e5ff;
+  z-index:9999;
 }
-h2{
-  text-align:center;
-  margin-top:0;
-}
-select{
-  width:100%;
-  padding:12px;
+#robot:before{
+  content:"";
+  position:absolute;
+  top:18px;
+  left:15px;
+  width:60px;
+  height:25px;
   border-radius:12px;
-  border:none;
-  font-size:16px;
-  margin-bottom:15px;
+  background:#00e5ff;
+  box-shadow:0 0 15px #00e5ff;
 }
-#predict{
-  text-align:center;
-  font-size:26px;
-  font-weight:bold;
-  padding:20px;
-  border-radius:15px;
+#robot .eye{
+  position:absolute;
+  top:23px;
+  width:8px;
+  height:8px;
+  border-radius:50%;
   background:#000;
-  box-shadow:inset 0 0 15px #00e5ff;
 }
-.bank{ color:#00ff99; }
-.player{ color:#ff5252; }
-#status{
+#robot .eye.left{ left:32px }
+#robot .eye.right{ right:32px }
+#robot .label{
+  position:absolute;
+  bottom:10px;
+  width:100%;
   text-align:center;
-  font-size:13px;
-  opacity:0.85;
-  margin-top:10px;
+  font-size:11px;
+  opacity:.8;
 }
+
+/* ===== TABLE CARD ===== */
+h2{text-align:center;margin:12px 0}
+#status{text-align:center;font-size:13px;opacity:.8}
+.table{
+  background:#000;
+  margin:12px auto;
+  max-width:420px;
+  padding:15px;
+  border-radius:18px;
+  box-shadow:0 0 15px #00e5ff;
+}
+.bank{color:#00ff99;font-weight:bold}
+.player{color:#ff5252;font-weight:bold}
+.star{color:#ffd700}
+.warn{color:#ffb300}
+.bad{color:#888}
+.conf{font-size:13px;opacity:.85}
 </style>
 </head>
 
 <body>
 
-<div id="panel">
-  <h2>🤖 BACCARAT AI VIP</h2>
-
-  <select id="tableSelect"></select>
-
-  <div id="predict">--</div>
-  <div id="status">Đang tải dữ liệu...</div>
+<div id="robot">
+  <div class="eye left"></div>
+  <div class="eye right"></div>
+  <div class="label">AI Lv3</div>
 </div>
+
+<h2>🤖 BACCARAT AI VIP</h2>
+<div id="status">Đang tải dữ liệu...</div>
+<div id="tables"></div>
 
 <script>
 const API_URL =
  "https://api.allorigins.win/raw?url=https://bcrapj-9ska.onrender.com/sexy/all";
 
-let tables = [];
+/* ========= AI LEVEL 3 ========= */
+function aiLv3(raw){
+  const h = raw.split("").filter(x=>x==="B"||x==="P");
+  if(h.length<6) return {res:"BANKER",conf:45,rank:"bad"};
 
-/* ================= AI LEVEL 2 (FIX TIE) ================= */
-function aiPredict(historyRaw){
-  // bỏ T (Tie)
-  const history = historyRaw
-    .split("")
-    .filter(x => x === "B" || x === "P");
+  let scoreB=0,scoreP=0;
 
-  if(history.length < 6){
-    return { result:"BANKER", conf:50 };
-  }
+  // Tổng lực
+  let b=0,p=0;
+  h.forEach(x=>x==="B"?b++:p++);
+  b>p?scoreB+=2:scoreP+=2;
 
-  let scoreB = 0, scoreP = 0;
+  // Cầu gần (x2)
+  const last8=h.slice(-8);
+  last8.forEach(x=>x==="B"?scoreB+=1.2:scoreP+=1.2);
 
-  // 1️⃣ Tổng lực
-  let b = 0, p = 0;
-  history.forEach(x=>{
-    if(x==="B") b++;
-    if(x==="P") p++;
-  });
-  b > p ? scoreB+=2 : scoreP+=2;
-
-  // 2️⃣ Cầu bệt (5 ván cuối)
-  const last5 = history.slice(-5);
+  // Cầu bệt
+  const last5=h.slice(-5);
   if(last5.every(x=>x==="B")) scoreB+=3;
   if(last5.every(x=>x==="P")) scoreP+=3;
 
-  // 3️⃣ Cầu đảo (4 giống nhau)
-  const last4 = history.slice(-4);
+  // Đảo mạnh
+  const last4=h.slice(-4);
   if(last4.every(x=>x==="B")) scoreP+=2;
   if(last4.every(x=>x==="P")) scoreB+=2;
 
-  // 4️⃣ Cầu 1-1
-  const last10 = history.slice(-10);
-  let zigzag = true;
-  for(let i=1;i<last10.length;i++){
-    if(last10[i]===last10[i-1]) zigzag=false;
+  // Loạn cầu → giảm điểm
+  let zigzag=true;
+  for(let i=1;i<last8.length;i++){
+    if(last8[i]===last8[i-1]) zigzag=false;
   }
-  if(zigzag){
-    history[history.length-1]==="B"
-      ? scoreP+=2 : scoreB+=2;
-  }
+  if(zigzag){ scoreB-=1; scoreP-=1 }
 
-  const result = scoreB >= scoreP ? "BANKER" : "PLAYER";
-  const conf = Math.min(90, Math.abs(scoreB-scoreP)*15 + 55);
+  const res = scoreB>=scoreP?"BANKER":"PLAYER";
+  let conf = Math.min(88,Math.abs(scoreB-scoreP)*12+50);
 
-  return { result, conf };
+  let rank="warn";
+  if(conf>=75) rank="star";
+  if(conf<60) rank="bad";
+
+  return {res,conf:Math.round(conf),rank};
 }
 
-/* ================= UPDATE UI ================= */
-function updatePrediction(){
-  const idx = document.getElementById("tableSelect").value;
-  const table = tables[idx];
-  if(!table) return;
-
-  const ai = aiPredict(table.ket_qua);
-  const box = document.getElementById("predict");
-
-  box.innerHTML =
-    `🤖 ${ai.result}<br><small>Độ tin cậy ${ai.conf}%</small>`;
-  box.className = ai.result === "BANKER"
-    ? "bank" : "player";
-}
-
-/* ================= LOAD API ================= */
-async function loadTables(){
+/* ========= LOAD + RENDER ========= */
+async function load(){
   try{
-    const res = await fetch(API_URL);
-    tables = await res.json();
+    const r=await fetch(API_URL);
+    const data=await r.json();
+    const wrap=document.getElementById("tables");
+    wrap.innerHTML="";
 
-    const select = document.getElementById("tableSelect");
-    select.innerHTML = "";
-
-    tables.forEach((t,i)=>{
-      const opt = document.createElement("option");
-      opt.value = i;
-      opt.textContent = "Bàn " + t.ban;
-      select.appendChild(opt);
+    data.forEach(t=>{
+      const ai=aiLv3(t.ket_qua);
+      const div=document.createElement("div");
+      div.className="table";
+      div.innerHTML=`
+        <div>🪑 <b>Bàn ${t.ban}</b></div>
+        <div class="${ai.res==="BANKER"?"bank":"player"}">
+          🤖 ${ai.res}
+        </div>
+        <div class="conf">Độ tin cậy: ${ai.conf}%</div>
+        <div class="${ai.rank}">
+          ${ai.rank==="star"?"⭐ Bàn đẹp":
+            ai.rank==="warn"?"⚠️ Trung bình":
+            "❌ AI khuyên bỏ"}
+        </div>
+      `;
+      wrap.appendChild(div);
     });
 
-    document.getElementById("status").textContent =
-      "Đã tải " + tables.length + " bàn";
-    updatePrediction();
+    document.getElementById("status").textContent=
+      "AI Lv3 đang theo dõi "+data.length+" bàn";
 
-  }catch(err){
-    document.getElementById("status").textContent =
+  }catch(e){
+    document.getElementById("status").textContent=
       "❌ Không kết nối được API";
-    console.error(err);
   }
 }
 
-document.getElementById("tableSelect")
-  .addEventListener("change", updatePrediction);
-
-loadTables();
-setInterval(loadTables, 15000);
+load();
+setInterval(load,15000);
 </script>
 
 </body>
