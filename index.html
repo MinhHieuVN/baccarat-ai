@@ -2,177 +2,58 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Baccarat AI VIP Lv3</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Baccarat AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
   margin:0;
-  background:#05080f;
-  font-family:Arial,Helvetica,sans-serif;
+  background:#0b1020;
   color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
 }
-
-/* ===== ROBOT ===== */
-#robot{
-  position:fixed;
-  right:15px;
-  bottom:15px;
-  width:90px;
-  height:120px;
-  background:linear-gradient(145deg,#111,#1e293b);
-  border-radius:20px;
-  box-shadow:0 0 25px #00e5ff;
-  z-index:9999;
-}
-#robot:before{
-  content:"";
-  position:absolute;
-  top:18px;
-  left:15px;
-  width:60px;
-  height:25px;
-  border-radius:12px;
-  background:#00e5ff;
-  box-shadow:0 0 15px #00e5ff;
-}
-#robot .eye{
-  position:absolute;
-  top:23px;
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background:#000;
-}
-#robot .eye.left{ left:32px }
-#robot .eye.right{ right:32px }
-#robot .label{
-  position:absolute;
-  bottom:10px;
-  width:100%;
+h2{
   text-align:center;
-  font-size:11px;
-  opacity:.8;
+  padding:15px 0;
 }
-
-/* ===== TABLE CARD ===== */
-h2{text-align:center;margin:12px 0}
-#status{text-align:center;font-size:13px;opacity:.8}
 .table{
-  background:#000;
+  background:#111833;
   margin:12px auto;
+  padding:14px;
   max-width:420px;
-  padding:15px;
-  border-radius:18px;
-  box-shadow:0 0 15px #00e5ff;
+  border-radius:14px;
+  box-shadow:0 0 10px rgba(0,0,0,.4);
 }
-.bank{color:#00ff99;font-weight:bold}
-.player{color:#ff5252;font-weight:bold}
-.star{color:#ffd700}
-.warn{color:#ffb300}
-.bad{color:#888}
-.conf{font-size:13px;opacity:.85}
+.predict{
+  font-size:17px;
+  margin-top:6px;
+}
+.percent{
+  font-size:28px;
+  font-weight:bold;
+  margin-top:4px;
+}
+.green{color:#00ff99}
+.yellow{color:#ffd966}
+.red{color:#ff5c5c}
+.stat{
+  font-size:14px;
+  opacity:.85;
+  margin-top:6px;
+}
+.warn{
+  font-size:13px;
+  color:#ff5c5c;
+  margin-top:4px;
+}
 </style>
 </head>
 
 <body>
 
-<div id="robot">
-  <div class="eye left"></div>
-  <div class="eye right"></div>
-  <div class="label">AI Lv3</div>
-</div>
-
-<h2>🤖 BACCARAT AI VIP</h2>
-<div id="status">Đang tải dữ liệu...</div>
+<h2>♠ Baccarat AI</h2>
 <div id="tables"></div>
 
-<script>
-const API_URL =
- "https://api.allorigins.win/raw?url=https://bcrapj-9ska.onrender.com/sexy/all";
-
-/* ========= AI LEVEL 3 ========= */
-function aiLv3(raw){
-  const h = raw.split("").filter(x=>x==="B"||x==="P");
-  if(h.length<6) return {res:"BANKER",conf:45,rank:"bad"};
-
-  let scoreB=0,scoreP=0;
-
-  // Tổng lực
-  let b=0,p=0;
-  h.forEach(x=>x==="B"?b++:p++);
-  b>p?scoreB+=2:scoreP+=2;
-
-  // Cầu gần (x2)
-  const last8=h.slice(-8);
-  last8.forEach(x=>x==="B"?scoreB+=1.2:scoreP+=1.2);
-
-  // Cầu bệt
-  const last5=h.slice(-5);
-  if(last5.every(x=>x==="B")) scoreB+=3;
-  if(last5.every(x=>x==="P")) scoreP+=3;
-
-  // Đảo mạnh
-  const last4=h.slice(-4);
-  if(last4.every(x=>x==="B")) scoreP+=2;
-  if(last4.every(x=>x==="P")) scoreB+=2;
-
-  // Loạn cầu → giảm điểm
-  let zigzag=true;
-  for(let i=1;i<last8.length;i++){
-    if(last8[i]===last8[i-1]) zigzag=false;
-  }
-  if(zigzag){ scoreB-=1; scoreP-=1 }
-
-  const res = scoreB>=scoreP?"BANKER":"PLAYER";
-  let conf = Math.min(88,Math.abs(scoreB-scoreP)*12+50);
-
-  let rank="warn";
-  if(conf>=75) rank="star";
-  if(conf<60) rank="bad";
-
-  return {res,conf:Math.round(conf),rank};
-}
-
-/* ========= LOAD + RENDER ========= */
-async function load(){
-  try{
-    const r=await fetch(API_URL);
-    const data=await r.json();
-    const wrap=document.getElementById("tables");
-    wrap.innerHTML="";
-
-    data.forEach(t=>{
-      const ai=aiLv3(t.ket_qua);
-      const div=document.createElement("div");
-      div.className="table";
-      div.innerHTML=`
-        <div>🪑 <b>Bàn ${t.ban}</b></div>
-        <div class="${ai.res==="BANKER"?"bank":"player"}">
-          🤖 ${ai.res}
-        </div>
-        <div class="conf">Độ tin cậy: ${ai.conf}%</div>
-        <div class="${ai.rank}">
-          ${ai.rank==="star"?"⭐ Bàn đẹp":
-            ai.rank==="warn"?"⚠️ Trung bình":
-            "❌ AI khuyên bỏ"}
-        </div>
-      `;
-      wrap.appendChild(div);
-    });
-
-    document.getElementById("status").textContent=
-      "AI Lv3 đang theo dõi "+data.length+" bàn";
-
-  }catch(e){
-    document.getElementById("status").textContent=
-      "❌ Không kết nối được API";
-  }
-}
-
-load();
-setInterval(load,15000);
-</script>
-
+<script src="app.js"></script>
 </body>
 </html>
