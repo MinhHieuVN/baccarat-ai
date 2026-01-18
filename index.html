@@ -15,7 +15,7 @@ body{
 #panel{
   max-width:420px;
   margin:auto;
-  background:linear-gradient(135deg,#10182b,#162447);
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
   border-radius:20px;
   box-shadow:0 0 30px #00e5ff;
   padding:20px;
@@ -26,8 +26,8 @@ h2{
 }
 select{
   width:100%;
-  padding:10px;
-  border-radius:10px;
+  padding:12px;
+  border-radius:12px;
   border:none;
   font-size:16px;
   margin-bottom:15px;
@@ -39,14 +39,14 @@ select{
   padding:20px;
   border-radius:15px;
   background:#000;
-  box-shadow:inset 0 0 10px #00e5ff;
+  box-shadow:inset 0 0 15px #00e5ff;
 }
-.bank{ color:#00e676; }
+.bank{ color:#00ff99; }
 .player{ color:#ff5252; }
 #status{
   text-align:center;
   font-size:13px;
-  opacity:0.8;
+  opacity:0.85;
   margin-top:10px;
 }
 </style>
@@ -60,25 +60,34 @@ select{
   <select id="tableSelect"></select>
 
   <div id="predict">--</div>
-  <div id="status">Đang kết nối API...</div>
+  <div id="status">Đang tải dữ liệu...</div>
 </div>
 
 <script>
-const API_URL = "https://bcrapj-9ska.onrender.com/sexy/all";
+const API_URL =
+ "https://api.allorigins.win/raw?url=https://bcrapj-9ska.onrender.com/sexy/all";
+
 let tables = [];
 
-/* ================= AI LEVEL 2 ================= */
-function aiPredictAdvanced(history){
+/* ================= AI LEVEL 2 (FIX TIE) ================= */
+function aiPredict(historyRaw){
+  // bỏ T (Tie)
+  const history = historyRaw
+    .split("")
+    .filter(x => x === "B" || x === "P");
+
+  if(history.length < 6){
+    return { result:"BANKER", conf:50 };
+  }
+
   let scoreB = 0, scoreP = 0;
-  const len = history.length;
-  if(len < 6) return { result:"BANKER", conf:50 };
 
   // 1️⃣ Tổng lực
   let b = 0, p = 0;
-  for(let c of history){
-    if(c==="B") b++;
-    if(c==="P") p++;
-  }
+  history.forEach(x=>{
+    if(x==="B") b++;
+    if(x==="P") p++;
+  });
   b > p ? scoreB+=2 : scoreP+=2;
 
   // 2️⃣ Cầu bệt (5 ván cuối)
@@ -91,14 +100,15 @@ function aiPredictAdvanced(history){
   if(last4.every(x=>x==="B")) scoreP+=2;
   if(last4.every(x=>x==="P")) scoreB+=2;
 
-  // 4️⃣ Cầu 1-1 (zigzag)
+  // 4️⃣ Cầu 1-1
   const last10 = history.slice(-10);
   let zigzag = true;
   for(let i=1;i<last10.length;i++){
     if(last10[i]===last10[i-1]) zigzag=false;
   }
   if(zigzag){
-    history[len-1]==="B" ? scoreP+=2 : scoreB+=2;
+    history[history.length-1]==="B"
+      ? scoreP+=2 : scoreB+=2;
   }
 
   const result = scoreB >= scoreP ? "BANKER" : "PLAYER";
@@ -113,14 +123,16 @@ function updatePrediction(){
   const table = tables[idx];
   if(!table) return;
 
-  const ai = aiPredictAdvanced(table.ket_qua);
+  const ai = aiPredict(table.ket_qua);
   const box = document.getElementById("predict");
 
-  box.innerHTML = `🤖 ${ai.result}<br><small>Độ tin cậy ${ai.conf}%</small>`;
-  box.className = ai.result === "BANKER" ? "bank" : "player";
+  box.innerHTML =
+    `🤖 ${ai.result}<br><small>Độ tin cậy ${ai.conf}%</small>`;
+  box.className = ai.result === "BANKER"
+    ? "bank" : "player";
 }
 
-/* ================= LOAD TABLES ================= */
+/* ================= LOAD API ================= */
 async function loadTables(){
   try{
     const res = await fetch(API_URL);
@@ -129,7 +141,7 @@ async function loadTables(){
     const select = document.getElementById("tableSelect");
     select.innerHTML = "";
 
-    tables.forEach((t, i)=>{
+    tables.forEach((t,i)=>{
       const opt = document.createElement("option");
       opt.value = i;
       opt.textContent = "Bàn " + t.ban;
@@ -140,10 +152,10 @@ async function loadTables(){
       "Đã tải " + tables.length + " bàn";
     updatePrediction();
 
-  }catch(e){
+  }catch(err){
     document.getElementById("status").textContent =
       "❌ Không kết nối được API";
-    console.error(e);
+    console.error(err);
   }
 }
 
@@ -151,7 +163,7 @@ document.getElementById("tableSelect")
   .addEventListener("change", updatePrediction);
 
 loadTables();
-setInterval(updatePrediction, 5000);
+setInterval(loadTables, 15000);
 </script>
 
 </body>
