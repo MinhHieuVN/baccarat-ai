@@ -1,78 +1,157 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>Baccarat AI VIP</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
-body { background:#0b0f1a; color:#fff; font-family:Arial; }
-#robot {
-  position: fixed;
-  right: 20px;
-  bottom: 120px;
-  width: 260px;
-  background: linear-gradient(135deg,#111,#1c2b4a);
-  border-radius: 18px;
-  box-shadow: 0 0 25px #00e5ff;
-  padding: 14px;
-  z-index: 99999;
+body{
+  background:#0b0f1a;
+  font-family:Arial, sans-serif;
+  color:#fff;
+  padding:20px;
 }
-#header {
-  font-weight:bold;
+#panel{
+  max-width:420px;
+  margin:auto;
+  background:linear-gradient(135deg,#10182b,#162447);
+  border-radius:20px;
+  box-shadow:0 0 30px #00e5ff;
+  padding:20px;
+}
+h2{
   text-align:center;
-  cursor: move;
+  margin-top:0;
 }
-.btn {
-  width:48%;
-  padding:8px;
+select{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
   border:none;
-  border-radius:8px;
-  font-weight:bold;
+  font-size:16px;
+  margin-bottom:15px;
 }
-.follow { background:#00e676; }
-.skip { background:#ff5252; }
+#predict{
+  text-align:center;
+  font-size:26px;
+  font-weight:bold;
+  padding:20px;
+  border-radius:15px;
+  background:#000;
+  box-shadow:inset 0 0 10px #00e5ff;
+}
+.bank{ color:#00e676; }
+.player{ color:#ff5252; }
+#status{
+  text-align:center;
+  font-size:13px;
+  opacity:0.8;
+  margin-top:10px;
+}
 </style>
 </head>
 
 <body>
 
-<div id="robot">
-  <div id="header">🤖 BACCARAT AI VIP</div>
-  <p>Bàn: <span id="table">AUTO</span></p>
-  <p>Dự đoán: <b id="predict">BANKER</b></p>
-  <p>Win: <span id="win">0</span> | Lose: <span id="lose">0</span></p>
-  <p>Winrate: <span id="rate">0%</span></p>
-  <button class="btn follow" onclick="follow()">THEO</button>
-  <button class="btn skip" onclick="skip()">BỎ</button>
+<div id="panel">
+  <h2>🤖 BACCARAT AI VIP</h2>
+
+  <select id="tableSelect"></select>
+
+  <div id="predict">--</div>
+  <div id="status">Đang kết nối API...</div>
 </div>
 
 <script>
-let win=0, lose=0, following=false;
+const API_URL = "https://bcrapj-9ska.onrender.com/sexy/all";
+let tables = [];
 
-function aiPredict(){
-  return Math.random()>0.5 ? "BANKER" : "PLAYER";
+/* ================= AI LEVEL 2 ================= */
+function aiPredictAdvanced(history){
+  let scoreB = 0, scoreP = 0;
+  const len = history.length;
+  if(len < 6) return { result:"BANKER", conf:50 };
+
+  // 1️⃣ Tổng lực
+  let b = 0, p = 0;
+  for(let c of history){
+    if(c==="B") b++;
+    if(c==="P") p++;
+  }
+  b > p ? scoreB+=2 : scoreP+=2;
+
+  // 2️⃣ Cầu bệt (5 ván cuối)
+  const last5 = history.slice(-5);
+  if(last5.every(x=>x==="B")) scoreB+=3;
+  if(last5.every(x=>x==="P")) scoreP+=3;
+
+  // 3️⃣ Cầu đảo (4 giống nhau)
+  const last4 = history.slice(-4);
+  if(last4.every(x=>x==="B")) scoreP+=2;
+  if(last4.every(x=>x==="P")) scoreB+=2;
+
+  // 4️⃣ Cầu 1-1 (zigzag)
+  const last10 = history.slice(-10);
+  let zigzag = true;
+  for(let i=1;i<last10.length;i++){
+    if(last10[i]===last10[i-1]) zigzag=false;
+  }
+  if(zigzag){
+    history[len-1]==="B" ? scoreP+=2 : scoreB+=2;
+  }
+
+  const result = scoreB >= scoreP ? "BANKER" : "PLAYER";
+  const conf = Math.min(90, Math.abs(scoreB-scoreP)*15 + 55);
+
+  return { result, conf };
 }
 
-function follow(){
-  following=true;
-  let result = Math.random()>0.5;
-  if(result) win++; else lose++;
-  update();
+/* ================= UPDATE UI ================= */
+function updatePrediction(){
+  const idx = document.getElementById("tableSelect").value;
+  const table = tables[idx];
+  if(!table) return;
+
+  const ai = aiPredictAdvanced(table.ket_qua);
+  const box = document.getElementById("predict");
+
+  box.innerHTML = `🤖 ${ai.result}<br><small>Độ tin cậy ${ai.conf}%</small>`;
+  box.className = ai.result === "BANKER" ? "bank" : "player";
 }
 
-function skip(){
-  following=false;
+/* ================= LOAD TABLES ================= */
+async function loadTables(){
+  try{
+    const res = await fetch(API_URL);
+    tables = await res.json();
+
+    const select = document.getElementById("tableSelect");
+    select.innerHTML = "";
+
+    tables.forEach((t, i)=>{
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = "Bàn " + t.ban;
+      select.appendChild(opt);
+    });
+
+    document.getElementById("status").textContent =
+      "Đã tải " + tables.length + " bàn";
+    updatePrediction();
+
+  }catch(e){
+    document.getElementById("status").textContent =
+      "❌ Không kết nối được API";
+    console.error(e);
+  }
 }
 
-function update(){
-  document.getElementById("predict").innerText = aiPredict();
-  document.getElementById("win").innerText = win;
-  document.getElementById("lose").innerText = lose;
-  let rate = win+lose ? Math.round(win/(win+lose)*100) : 0;
-  document.getElementById("rate").innerText = rate+"%";
-}
+document.getElementById("tableSelect")
+  .addEventListener("change", updatePrediction);
 
-setInterval(update, 5000);
+loadTables();
+setInterval(updatePrediction, 5000);
 </script>
 
 </body>
