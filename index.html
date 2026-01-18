@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Baccarat AI VIP MAX</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{background:#0b0f14;color:#eee;font-family:Arial;margin:0;padding:10px}
+h1{text-align:center;color:#00ff99}
+.table{background:#111827;border-radius:12px;padding:10px;margin-bottom:10px}
+.aiBox{margin-top:6px;padding:8px;border-radius:10px;text-align:center;font-weight:bold}
+.BANKER{background:#003b5c}
+.PLAYER{background:#5c0000}
+.NO{background:#333}
+.small{font-size:12px;opacity:.8}
+#robot{
+ position:fixed;bottom:20px;right:20px;
+ width:72px;height:72px;border-radius:50%;
+ background:#0f172a;color:#00ff99;
+ display:flex;align-items:center;justify-content:center;
+ font-size:34px;cursor:pointer;z-index:9999;
+ box-shadow:0 0 25px #00ff99;
+}
+#robotMsg{
+ position:fixed;bottom:100px;right:20px;
+ background:#111827;border-radius:12px;
+ padding:10px;max-width:280px;display:none;
+}
+</style>
+</head>
+<body>
+<h1>🤖 BACCARAT AI VIP MAX</h1>
+<div id="tables"></div>
+
+<div id="robot">🤖</div>
+<div id="robotMsg"></div>
+
+<script>
+const API="https://bcrapj-9ska.onrender.com/sexy/all";
+const history={}, lastRound={};
+let CONF_THRESHOLD = 72;
+
+function rolling(arr,n){
+ const s=arr.slice(-n);
+ const c={BANKER:0,PLAYER:0};
+ s.forEach(x=>{if(c[x]!=null)c[x]++});
+ const t=c.BANKER+c.PLAYER||1;
+ return {B:c.BANKER/t*100,P:c.PLAYER/t*100};
+}
+function markov2(arr){
+ if(arr.length<5) return {B:50,P:50};
+ let m={};
+ for(let i=0;i<arr.length-2;i++){
+  const k=arr[i]+"_"+arr[i+1];
+  m[k]=m[k]||{B:0,P:0};
+  if(arr[i+2]==="BANKER")m[k].B++;
+  if(arr[i+2]==="PLAYER")m[k].P++;
+ }
+ const k=arr[arr.length-2]+"_"+arr[arr.length-1];
+ const r=m[k]||{B:1,P:1};
+ const t=r.B+r.P||1;
+ return {B:r.B/t*100,P:r.P/t*100};
+}
+function streak(arr){
+ let last=arr[arr.length-1],c=1;
+ for(let i=arr.length-2;i>=0;i--){if(arr[i]==last)c++;else break;}
+ return {last,c};
+}
+function entropy(arr){
+ const s=arr.slice(-12);
+ let c={B:0,P:0}; s.forEach(x=>{if(x==="BANKER")c.B++; if(x==="PLAYER")c.P++;});
+ const t=c.B+c.P||1;
+ const pB=c.B/t, pP=c.P/t;
+ return -(pB*Math.log2(pB||1)+pP*Math.log2(pP||1));
+}
+function aiVIP(arr){
+ if(arr.length<20) return {pick:"NO",conf:0};
+ const r10=rolling(arr,10), r20=rolling(arr,20), r50=rolling(arr,50);
+ const mk=markov2(arr);
+ const st=streak(arr);
+ const ent=entropy(arr);
+ if(ent>0.95) return {pick:"NO",conf:0};
+
+ let scoreB =
+  0.35*(0.5*r10.B+0.3*r20.B+0.2*r50.B) +
+  0.35*mk.B +
+  0.20*(st.last==="BANKER"?Math.max(30,80-st.c*10):45);
+
+ let scoreP =
+  0.35*(0.5*r10.P+0.3*r20.P+0.2*r50.P) +
+  0.35*mk.P +
+  0.20*(st.last==="PLAYER"?Math.max(30,80-st.c*10):45);
+
+ let pick = scoreB>scoreP?"BANKER":"PLAYER";
+ let conf = Math.round(Math.max(scoreB,scoreP));
+ if(conf<CONF_THRESHOLD) return {pick:"NO",conf};
+ return {pick,conf};
+}
+
+async function fetchData(){
+ const res=await fetch(API); const data=await res.json();
+ const box=document.getElementById("tables");
+ box.innerHTML="";
+ let robotText="🤖 Đang chờ kèo đẹp...";
+ data.forEach(t=>{
+  const id=t.tableId||t.table;
+  const r=t.result, rd=t.roundId||t.round;
+  if(!["BANKER","PLAYER"].includes(r)) return;
+  if(lastRound[id]===rd) return;
+  lastRound[id]=rd;
+
+  history[id]=history[id]||[];
+  history[id].push(r); history[id]=history[id].slice(-200);
+
+  const ai=aiVIP(history[id]);
+  if(ai.pick!=="NO") robotText=`🤖 Bàn ${id}: ${ai.pick} (${ai.conf}%)`;
+
+  box.innerHTML+=`
+   <div class="table">
+    <b>🟢 Bàn ${id}</b><br>
+    KQ: ${r}<br>
+    <div class="aiBox ${ai.pick}">
+     ${ai.pick==="NO"?"⛔ KHÔNG THEO":`🤖 ${ai.pick} • ${ai.conf}%`}
+    </div>
+    <div class="small">${history[id].slice(-10).join(" - ")}</div>
+   </div>`;
+ });
+ document.getElementById("robotMsg").innerText = robotText + "\nNgưỡng: "+CONF_THRESHOLD+"%";
+}
+document.getElementById("robot").onclick=()=>{
+ const m=document.getElementById("robotMsg");
+ m.style.display=m.style.display==="block"?"none":"block";
+};
+setInterval(fetchData,5000);
+fetchData();
+</script>
+</body>
+</html>
