@@ -15,12 +15,26 @@ body{
 }
 h2{text-align:center;margin:6px 0}
 
-/* MENU BUTTON */
+/* MODE LABEL */
+#modeLabel{
+  position:fixed;
+  top:68px;
+  left:12px;
+  font-size:12px;
+  opacity:.75;
+  z-index:9999;
+  padding:4px 8px;
+  border-radius:6px;
+  background:#111833;
+  letter-spacing:.3px;
+}
+
+/* MENU BTN */
 #menuBtn{
   position:fixed;
   top:64px;
   right:14px;
-  font-size:24px;
+  font-size:22px;
   z-index:10000;
   background:#111833;
   padding:5px 9px;
@@ -40,7 +54,7 @@ h2{text-align:center;margin:6px 0}
 #menu{
   position:fixed;
   top:0;
-  right:-300px;     /* 👈 đẩy xa hơn để không lộ mép */
+  right:-320px;
   width:260px;
   height:100%;
   background:#0f172a;
@@ -84,42 +98,21 @@ h2{text-align:center;margin:6px 0}
   border-radius:14px;
   background:linear-gradient(180deg,#141c3a,#0b1020);
   box-shadow:0 6px 18px rgba(0,0,0,.35);
-  transition:.2s ease;
 }
-.table:active{transform:scale(.98)}
-
-/* HIGHLIGHT BÀN MẠNH */
 .table.best{
-  box-shadow:
-    0 0 0 2px #00ff99,
-    0 0 14px rgba(0,255,153,.45),
-    0 10px 24px rgba(0,0,0,.55);
+  box-shadow:0 0 0 2px #00ff99,0 0 14px rgba(0,255,153,.45);
 }
 
-/* CARD SECTIONS */
-.card-top{
-  font-size:14px;
-  opacity:.9;
-}
-.card-center{
-  text-align:center;
-  margin:8px 0;
-}
-.card-center .side{
-  font-size:16px;
-  font-weight:bold;
-  letter-spacing:.3px;
-}
-.card-center .percent{
-  font-size:26px;
-  font-weight:700;
-}
+/* CARD PARTS */
+.card-top{font-size:14px;opacity:.9}
+.card-center{text-align:center;margin:8px 0}
+.card-center .side{font-size:16px;font-weight:bold}
+.card-center .percent{font-size:26px;font-weight:700}
 .card-bottom{
   font-size:13px;
   opacity:.8;
   display:flex;
   justify-content:space-between;
-  margin-top:6px;
 }
 
 /* COLORS */
@@ -128,16 +121,8 @@ h2{text-align:center;margin:6px 0}
 .red{color:#ff5c5c}
 
 /* MINI ROAD */
-.mini-road{
-  display:flex;
-  gap:5px;
-  margin-top:4px;
-}
-.dot{
-  width:8px;
-  height:8px;
-  border-radius:50%;
-}
+.mini-road{display:flex;gap:5px;margin-top:4px}
+.dot{width:8px;height:8px;border-radius:50%}
 .dot.B{background:#00ff99}
 .dot.P{background:#ff5c5c}
 
@@ -148,22 +133,12 @@ h2{text-align:center;margin:6px 0}
   margin:0 auto 10px;
   font-size:14px;
 }
-
-/* TOP BTN */
-#toTop{
-  position:fixed;
-  bottom:18px;
-  right:14px;
-  background:#111833;
-  padding:8px;
-  border-radius:50%;
-  display:none;
-  z-index:10000;
-}
 </style>
 </head>
 
 <body>
+
+<div id="modeLabel"></div>
 
 <div id="menuBtn">☰</div>
 <div id="overlay" onclick="closeMenu()"></div>
@@ -179,8 +154,6 @@ h2{text-align:center;margin:6px 0}
 
 <div id="ranking" class="table"></div>
 <div id="tables"></div>
-
-<div id="toTop">↑</div>
 
 <script src="app.js"></script>
 </body>
