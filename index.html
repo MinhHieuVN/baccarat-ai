@@ -26,7 +26,6 @@ h2{text-align:center;margin:6px 0}
   padding:4px 8px;
   border-radius:6px;
   background:#111833;
-  letter-spacing:.3px;
 }
 
 /* MENU BTN */
@@ -50,7 +49,7 @@ h2{text-align:center;margin:6px 0}
   display:none;
 }
 
-/* MENU – ẨN TUYỆT ĐỐI */
+/* MENU */
 #menu{
   position:fixed;
   top:0;
@@ -61,15 +60,10 @@ h2{text-align:center;margin:6px 0}
   z-index:9999;
   padding:18px;
   transition:.3s ease;
-  overflow:hidden;
 }
 #menu.open{ right:0 }
 
-.menu-title{
-  font-size:15px;
-  font-weight:bold;
-  margin-bottom:12px;
-}
+.menu-title{font-size:15px;font-weight:bold;margin-bottom:12px}
 .menu-item{
   padding:10px;
   border-radius:8px;
@@ -77,10 +71,7 @@ h2{text-align:center;margin:6px 0}
   margin-bottom:8px;
   font-size:14px;
 }
-.menu-item.danger{
-  background:#3a1a1a;
-  color:#ff6b6b;
-}
+.menu-item.danger{background:#3a1a1a}
 
 /* LIST */
 #tables{
@@ -89,42 +80,43 @@ h2{text-align:center;margin:6px 0}
   gap:10px;
 }
 
-/* CARD – COMPACT */
+/* CARD */
 .table{
   width:94%;
   max-width:480px;
   margin:0 auto;
   padding:12px 14px;
   border-radius:14px;
-  background:linear-gradient(180deg,#141c3a,#0b1020);
+  background:#111833;
   box-shadow:0 6px 18px rgba(0,0,0,.35);
-}
-.table.best{
-  box-shadow:0 0 0 2px #00ff99,0 0 14px rgba(0,255,153,.45);
 }
 
 /* CARD PARTS */
 .card-top{font-size:14px;opacity:.9}
 .card-center{text-align:center;margin:8px 0}
-.card-center .side{font-size:16px;font-weight:bold}
-.card-center .percent{font-size:26px;font-weight:700}
+.card-center .side{
+  font-size:16px;
+  font-weight:bold;
+}
+.card-center .percent{
+  font-size:24px;
+  font-weight:600;
+  opacity:.85;
+}
 .card-bottom{
   font-size:13px;
-  opacity:.8;
+  opacity:.75;
   display:flex;
   justify-content:space-between;
 }
 
-/* COLORS */
-.green{color:#00ff99}
-.yellow{color:#ffd966}
-.red{color:#ff5c5c}
-
-/* MINI ROAD */
-.mini-road{display:flex;gap:5px;margin-top:4px}
-.dot{width:8px;height:8px;border-radius:50%}
-.dot.B{background:#00ff99}
-.dot.P{background:#ff5c5c}
+/* MINI ROAD – KHÔNG MÀU */
+.mini-road{
+  margin-top:4px;
+  font-family:monospace;
+  font-size:13px;
+  opacity:.85;
+}
 
 /* RANKING */
 #ranking{
