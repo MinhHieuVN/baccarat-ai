@@ -13,19 +13,21 @@ body{
   color:#fff;
   font-family:Arial,Helvetica,sans-serif;
 }
-h2{text-align:center;margin:8px 0}
+h2{text-align:center;margin:6px 0}
 
-/* MENU */
+/* MENU BUTTON */
 #menuBtn{
   position:fixed;
   top:64px;
   right:14px;
-  font-size:26px;
+  font-size:24px;
   z-index:10000;
   background:#111833;
-  padding:6px 10px;
-  border-radius:10px;
+  padding:5px 9px;
+  border-radius:8px;
 }
+
+/* OVERLAY */
 #overlay{
   position:fixed;
   inset:0;
@@ -33,44 +35,55 @@ h2{text-align:center;margin:8px 0}
   z-index:9998;
   display:none;
 }
+
+/* MENU – ẨN TUYỆT ĐỐI */
 #menu{
   position:fixed;
   top:0;
-  right:-260px;
+  right:-300px;     /* 👈 đẩy xa hơn để không lộ mép */
   width:260px;
   height:100%;
   background:#0f172a;
   z-index:9999;
-  padding:20px;
+  padding:18px;
   transition:.3s ease;
+  overflow:hidden;
 }
-#menu.open{right:0}
-.menu-title{font-size:16px;font-weight:bold;margin-bottom:15px}
-.menu-item{
-  padding:12px;
-  border-radius:10px;
-  background:#111833;
-  margin-bottom:10px;
+#menu.open{ right:0 }
+
+.menu-title{
   font-size:15px;
+  font-weight:bold;
+  margin-bottom:12px;
 }
-.menu-item.danger{background:#3a1a1a;color:#ff6b6b}
+.menu-item{
+  padding:10px;
+  border-radius:8px;
+  background:#111833;
+  margin-bottom:8px;
+  font-size:14px;
+}
+.menu-item.danger{
+  background:#3a1a1a;
+  color:#ff6b6b;
+}
 
 /* LIST */
 #tables{
   display:flex;
   flex-direction:column;
-  gap:14px;
+  gap:10px;
 }
 
-/* CARD */
+/* CARD – COMPACT */
 .table{
   width:94%;
   max-width:480px;
   margin:0 auto;
-  padding:18px;
-  border-radius:20px;
+  padding:12px 14px;
+  border-radius:14px;
   background:linear-gradient(180deg,#141c3a,#0b1020);
-  box-shadow:0 10px 30px rgba(0,0,0,.45);
+  box-shadow:0 6px 18px rgba(0,0,0,.35);
   transition:.2s ease;
 }
 .table:active{transform:scale(.98)}
@@ -79,28 +92,34 @@ h2{text-align:center;margin:8px 0}
 .table.best{
   box-shadow:
     0 0 0 2px #00ff99,
-    0 0 18px rgba(0,255,153,.6),
-    0 12px 32px rgba(0,0,0,.6);
+    0 0 14px rgba(0,255,153,.45),
+    0 10px 24px rgba(0,0,0,.55);
 }
 
 /* CARD SECTIONS */
-.card-top{font-size:15px;opacity:.9}
-.card-center{text-align:center;margin:14px 0}
+.card-top{
+  font-size:14px;
+  opacity:.9;
+}
+.card-center{
+  text-align:center;
+  margin:8px 0;
+}
 .card-center .side{
-  font-size:20px;
+  font-size:16px;
   font-weight:bold;
-  letter-spacing:.5px;
+  letter-spacing:.3px;
 }
 .card-center .percent{
-  font-size:38px;
-  font-weight:800;
+  font-size:26px;
+  font-weight:700;
 }
 .card-bottom{
-  font-size:14px;
-  opacity:.85;
+  font-size:13px;
+  opacity:.8;
   display:flex;
   justify-content:space-between;
-  margin-top:10px;
+  margin-top:6px;
 }
 
 /* COLORS */
@@ -109,8 +128,16 @@ h2{text-align:center;margin:8px 0}
 .red{color:#ff5c5c}
 
 /* MINI ROAD */
-.mini-road{display:flex;gap:6px;margin-top:6px}
-.dot{width:10px;height:10px;border-radius:50%}
+.mini-road{
+  display:flex;
+  gap:5px;
+  margin-top:4px;
+}
+.dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+}
 .dot.B{background:#00ff99}
 .dot.P{background:#ff5c5c}
 
@@ -118,16 +145,17 @@ h2{text-align:center;margin:8px 0}
 #ranking{
   width:94%;
   max-width:480px;
-  margin:0 auto 12px;
+  margin:0 auto 10px;
+  font-size:14px;
 }
 
 /* TOP BTN */
 #toTop{
   position:fixed;
-  bottom:20px;
-  right:16px;
+  bottom:18px;
+  right:14px;
   background:#111833;
-  padding:10px;
+  padding:8px;
   border-radius:50%;
   display:none;
   z-index:10000;
