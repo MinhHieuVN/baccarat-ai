@@ -1,378 +1,131 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
 <title>Baccarat AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-  body{
-    margin:0;
-    font-family: Arial, sans-serif;
-    background:#050812;
-    color:#fff;
-  }
-  .container{
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 10px;
-  }
+body{
+  margin:0;
+  padding-top:60px;
+  background:#0b1020;
+  color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+}
+h2{text-align:center;margin:10px 0}
 
-  .topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:10px 0;
-  }
+/* MENU */
+#menuBtn{
+  position:fixed;
+  top:60px;
+  right:14px;
+  font-size:26px;
+  z-index:99999;
+  background:#111833;
+  padding:6px 10px;
+  border-radius:8px;
+}
+#menu{
+  position:fixed;
+  top:60px;
+  right:-260px;
+  width:260px;
+  height:calc(100% - 60px);
+  background:#111833;
+  padding:20px;
+  transition:.3s;
+  z-index:99998;
+}
+#menu.open{right:0}
+#menu button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  font-size:15px;
+}
 
-  .title{
-    font-size: 24px;
-    font-weight: 700;
-  }
+/* OVERLAY */
+#overlay{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,.4);
+  z-index:99997;
+  display:none;
+}
+#overlay.show{display:block}
 
-  .menu{
-    font-size: 28px;
-    cursor:pointer;
-    padding:5px 10px;
-  }
+/* TABLE */
+#tables{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.table{
+  width:95%;
+  max-width:480px;
+  margin:0 auto;
+  background:#111833;
+  padding:16px;
+  border-radius:16px;
+}
+.predict{margin-top:6px;font-size:15px}
+.percent{font-size:30px;font-weight:bold}
+.green{color:#00ff99}
+.yellow{color:#ffd966}
+.red{color:#ff5c5c}
+.stat{font-size:14px;opacity:.85;margin-top:4px}
+.warn{font-size:13px;color:#ff5c5c;margin-top:4px}
 
-  .panel{
-    background:#0b1730;
-    border-radius: 18px;
-    padding: 18px;
-    box-shadow: 0 0 18px rgba(0,255,255,0.25);
-  }
+/* MINI ROAD */
+.mini-road{display:flex;gap:6px;margin-top:6px}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.B{background:#00ff99}
+.dot.P{background:#ff5c5c}
 
-  .row{
-    display:flex;
-    gap: 10px;
-    align-items:center;
-  }
+/* RANKING */
+#ranking{
+  width:95%;
+  max-width:480px;
+  margin:0 auto 12px;
+}
 
-  .select{
-    flex:1;
-    padding:12px;
-    border-radius: 12px;
-    border:none;
-    font-size:16px;
-  }
-
-  .btn{
-    padding:12px 16px;
-    border:none;
-    border-radius: 12px;
-    cursor:pointer;
-    font-size:16px;
-    font-weight:700;
-    background:#00bcd4;
-    color:#fff;
-  }
-
-  .status{
-    margin-top: 12px;
-    font-size: 14px;
-    color:#ff5b5b;
-    display:flex;
-    gap:10px;
-    align-items:center;
-  }
-
-  .board{
-    margin-top: 14px;
-    display:grid;
-    grid-template-columns: repeat(3,1fr);
-    gap: 12px;
-  }
-
-  .card{
-    background:#0b1b3a;
-    border-radius: 14px;
-    padding: 12px;
-    border:1px solid rgba(255,255,255,0.12);
-  }
-
-  .card h3{
-    margin:0;
-    font-size: 16px;
-  }
-
-  .kq{
-    margin-top: 8px;
-    font-size: 14px;
-    color:#a8c7ff;
-  }
-
-  .predict{
-    margin-top: 10px;
-    font-size: 16px;
-    font-weight:700;
-  }
-
-  .algo{
-    margin-top: 8px;
-    font-size: 12px;
-    color:#d0d0d0;
-  }
-
-  .rank{
-    margin-top: 14px;
-    background:#071026;
-    border-radius: 14px;
-    padding: 12px;
-  }
-
-  .rank h4{
-    margin:0;
-    font-size: 16px;
-  }
-
-  .rank table{
-    width:100%;
-    margin-top:10px;
-    border-collapse: collapse;
-  }
-
-  .rank th, .rank td{
-    border:1px solid rgba(255,255,255,0.12);
-    padding:8px;
-    text-align:center;
-    font-size: 12px;
-  }
-
-  /* menu overlay */
-  .overlay{
-    position: fixed;
-    top:0; left:0;
-    width:100%; height:100%;
-    background: rgba(0,0,0,0.5);
-    display:none;
-    justify-content:center;
-    align-items:center;
-  }
-  .menuBox{
-    width: 260px;
-    background:#0b1730;
-    border-radius: 14px;
-    padding: 14px;
-  }
-  .menuBox h3{
-    margin:0 0 10px 0;
-    font-size: 16px;
-  }
-  .menuBox button{
-    width:100%;
-    padding:10px;
-    margin-top:10px;
-    border:none;
-    border-radius:10px;
-    cursor:pointer;
-    background:#00bcd4;
-    color:#fff;
-    font-weight:700;
-  }
+/* TOP BUTTON */
+#toTop{
+  position:fixed;
+  bottom:20px;
+  right:16px;
+  background:#111833;
+  padding:10px;
+  border-radius:50%;
+  display:none;
+  z-index:99999;
+}
 </style>
 </head>
 
 <body>
-<div class="container">
-  <div class="topbar">
-    <div class="title">Baccarat AI</div>
-    <div class="menu" id="menuBtn">≡</div>
-  </div>
 
-  <div class="panel">
-    <div class="row">
-      <select class="select" id="selectBan"></select>
-      <button class="btn" id="btnRefresh">Làm mới</button>
-    </div>
+<div id="menuBtn">☰</div>
 
-    <div class="status" id="status"></div>
-
-    <div class="board" id="board"></div>
-
-    <div class="rank" id="rankBox">
-      <h4>Bảng xếp hạng bàn win cao</h4>
-      <table>
-        <thead>
-          <tr>
-            <th>Bàn</th>
-            <th>% Win</th>
-            <th>Win</th>
-            <th>Lose</th>
-          </tr>
-        </thead>
-        <tbody id="rankBody"></tbody>
-      </table>
-    </div>
-  </div>
+<div id="menu">
+  <h3>CÀI ĐẶT</h3>
+  <button onclick="setMode('auto')">AUTO MODE</button>
+  <button onclick="setMode('full')">FULL MODE</button>
+  <hr>
+  <button onclick="resetStats()">Reset Win / Lose</button>
 </div>
 
-<!-- Menu -->
-<div class="overlay" id="overlay">
-  <div class="menuBox">
-    <h3>Chế độ</h3>
-    <button id="autoModeBtn">Auto Mode</button>
-    <button id="fullModeBtn">Full Mode</button>
-  </div>
-</div>
+<div id="overlay"></div>
 
-<script>
-  const API_URL = "https://api.allorigins.win/raw?url=https://bcrapj-9ska.onrender.com/sexy/all";
-  let dataAll = [];
-  let mode = "AUTO";
+<h2>♠ Baccarat AI</h2>
 
-  // --- ALGORITHMS ---
-  function algTrend(kq){
-    let p=(kq.match(/P/g)||[]).length;
-    let b=(kq.match(/B/g)||[]).length;
-    return p>=b?"P":"B";
-  }
-  function algRecent(kq){
-    let arr=kq.slice(-8).split("");
-    let p=arr.filter(x=>x=="P").length;
-    let b=arr.filter(x=>x=="B").length;
-    return p>=b?"P":"B";
-  }
-  function algStreak(kq){
-    let a=kq.slice(-1);
-    let count=1;
-    for(let i=kq.length-2;i>=0;i--){
-      if(kq[i]===a) count++;
-      else break;
-    }
-    return count>=3 ? a : algRecent(kq);
-  }
-  function algBreak(kq){
-    let last=kq.slice(-1);
-    let prev=kq.slice(-2,-1);
-    return last===prev ? algRecent(kq) : prev;
-  }
+<div id="ranking" class="table"></div>
+<div id="tables"></div>
 
-  function analyze(kq){
-    let votes={
-      trend: algTrend(kq),
-      recent: algRecent(kq),
-      streak: algStreak(kq),
-      break: algBreak(kq)
-    };
+<div id="toTop">↑</div>
 
-    let p=Object.values(votes).filter(v=>v=="P").length;
-    let b=Object.values(votes).filter(v=>v=="B").length;
-
-    let side = p>=b ? "PLAYER":"BANKER";
-    let rate = Math.round(Math.max(p,b)/4*100);
-
-    return {side, rate, votes};
-  }
-
-  // --- UI ---
-  const statusEl = document.getElementById("status");
-  const boardEl = document.getElementById("board");
-  const selectBan = document.getElementById("selectBan");
-  const rankBody = document.getElementById("rankBody");
-
-  function render(){
-    boardEl.innerHTML="";
-    rankBody.innerHTML="";
-
-    let list = dataAll.slice(0, 9); // show 9 bàn
-    if(mode==="FULL"){
-      list = dataAll; // show all
-    }
-
-    // Build rank data
-    let rankData = [];
-
-    list.forEach((item)=>{
-      let res = analyze(item.ket_qua);
-      rankData.push({
-        ban: item.ban,
-        winRate: res.rate,
-        side: res.side,
-        votes: res.votes,
-        kq: item.ket_qua
-      });
-
-      let card = document.createElement("div");
-      card.className="card";
-      card.innerHTML = `
-        <h3>Bàn ${item.ban}</h3>
-        <div class="kq">Kết quả: ${item.ket_qua}</div>
-        <div class="predict">Dự đoán: ${res.side} (${res.rate}%)</div>
-        <div class="algo">
-          Trend:${res.votes.trend} | Recent:${res.votes.recent} | Streak:${res.votes.streak} | Break:${res.votes.break}
-        </div>
-      `;
-      boardEl.appendChild(card);
-    });
-
-    rankData.sort((a,b)=>b.winRate-a.winRate);
-    rankData.slice(0, 5).forEach(r=>{
-      let tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${r.ban}</td>
-        <td>${r.winRate}%</td>
-        <td>${r.side}</td>
-        <td>${100-r.winRate}%</td>
-      `;
-      rankBody.appendChild(tr);
-    });
-
-    // select options
-    selectBan.innerHTML="";
-    dataAll.forEach(x=>{
-      let opt = document.createElement("option");
-      opt.value=x.ban;
-      opt.text = "Bàn " + x.ban;
-      selectBan.appendChild(opt);
-    });
-
-    statusEl.innerHTML = "✔ Đã kết nối API";
-    statusEl.style.color="#7cffb2";
-  }
-
-  async function fetchAPI(){
-    try{
-      statusEl.innerHTML = "⏳ Đang kết nối API...";
-      statusEl.style.color="#ffd36a";
-
-      let res = await fetch(API_URL);
-      let data = await res.json();
-      dataAll = data;
-
-      render();
-    } catch(e){
-      statusEl.innerHTML = "❌ Không kết nối được API";
-      statusEl.style.color="#ff5b5b";
-    }
-  }
-
-  document.getElementById("btnRefresh").addEventListener("click", fetchAPI);
-
-  // Menu
-  const overlay = document.getElementById("overlay");
-  document.getElementById("menuBtn").addEventListener("click", ()=>{
-    overlay.style.display="flex";
-  });
-  overlay.addEventListener("click", (e)=>{
-    if(e.target === overlay){
-      overlay.style.display="none";
-    }
-  });
-
-  document.getElementById("autoModeBtn").addEventListener("click", ()=>{
-    mode="AUTO";
-    overlay.style.display="none";
-    render();
-  });
-  document.getElementById("fullModeBtn").addEventListener("click", ()=>{
-    mode="FULL";
-    overlay.style.display="none";
-    render();
-  });
-
-  // init
-  fetchAPI();
-</script>
+<script src="app.js"></script>
 </body>
 </html>
