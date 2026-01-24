@@ -1,130 +1,92 @@
-const API = "https://api.allorigins.win/raw?url=https://bcrapj-9ska.onrender.com/sexy/all";
+const API="https://bcrapj.vercel.app/sexy/all";
+const app=document.getElementById("app");
 
-let mode = localStorage.getItem("baccarat_mode") || "auto";
-let store = JSON.parse(localStorage.getItem("baccarat_store") || "{}");
-let lastHash = "";
-
-const tablesBox = document.getElementById("tables");
-const rankingBox = document.getElementById("ranking");
-const menu = document.getElementById("menu");
-const overlay = document.getElementById("overlay");
-const modeLabel = document.getElementById("modeLabel");
-
-/* MODE LABEL */
-function updateModeLabel(){
-  modeLabel.innerHTML = mode === "auto" ? "AUTO MODE" : "FULL MODE";
-}
-
-/* MENU */
-document.getElementById("menuBtn").onclick = () => {
-  menu.classList.add("open");
-  overlay.style.display = "block";
+const AIs={
+  Pattern:h=>h.at(-1)===h.at(-2)?h.at(-1):null,
+  Trend:h=>count(h.slice(-20),"B")>count(h.slice(-20),"P")?"B":"P",
+  Short:h=>count(h.slice(-5),"B")>count(h.slice(-5),"P")?"B":"P",
+  Streak:h=>streak(h)>=3?h.at(-1):null,
+  Reverse:h=>streak(h)>=4?flip(h.at(-1)):null
 };
-function closeMenu(){
-  menu.classList.remove("open");
-  overlay.style.display = "none";
-}
-function setMode(m){
-  mode = m;
-  localStorage.setItem("baccarat_mode", m);
-  updateModeLabel();
-  closeMenu();
-}
-function resetStats(){
-  if(confirm("Reset Win / Lose?")){
-    store = {};
-    save();
-    closeMenu();
+
+const store=JSON.parse(localStorage.getItem("AI_CMD")||"{}");
+const save=()=>localStorage.setItem("AI_CMD",JSON.stringify(store));
+const count=(a,v)=>a.filter(x=>x===v).length;
+const flip=v=>v==="B"?"P":"B";
+const streak=h=>{
+  let c=1;
+  for(let i=h.length-1;i>0;i--){
+    if(h[i]===h[i-1])c++;else break;
   }
-}
-function save(){
-  localStorage.setItem("baccarat_store", JSON.stringify(store));
-}
-
-/* AI */
-const algTrend = a => a.filter(x=>x==="P").length >= a.filter(x=>x==="B").length ? "P":"B";
-const algRecent = a => {
-  a=a.slice(-8);
-  return a.filter(x=>x==="P").length >= a.filter(x=>x==="B").length ? "P":"B";
+  return c;
 };
-const algStreak = a => {
-  let l=a[a.length-1],c=1;
-  for(let i=a.length-2;i>=0;i--){if(a[i]===l)c++;else break}
-  return c>=3?l:algRecent(a);
-};
-const algBreak = a =>
-  a.length<2 ? algRecent(a)
-  : (a[a.length-1]===a[a.length-2] ? algRecent(a) : a[a.length-2]);
 
-/* CORE */
-async function fetchLatest(){
-  try{
-    const res = await fetch(API);
-    const data = await res.json();
-    const hash = JSON.stringify(data);
-
-    if(hash !== lastHash){
-      lastHash = hash;
-      render(data);
-    }
-  }catch(e){
-    console.error("API error", e);
-  }
-}
-
-/* RENDER */
-function render(data){
-  tablesBox.innerHTML = "";
-  rankingBox.innerHTML = "<b>🏆 BÀN NGON</b><br>";
+async function load(){
+  const data=await (await fetch(API)).json();
+  app.innerHTML="";
 
   data.forEach(t=>{
-    const hist = t.ket_qua.split("").filter(x=>x==="B"||x==="P");
-    if(hist.length < 5 && mode==="auto") return;
+    const h=(t.results||[]).filter(x=>x==="B"||x==="P");
+    if(h.length<6) return;
 
-    if(!store[t.ban]) store[t.ban]={win:0,lose:0,last:null};
-    const s = store[t.ban];
+    const name=t.table;
+    store[name]??={};
 
-    const votes=[algTrend(hist),algRecent(hist),algStreak(hist),algBreak(hist)];
-    const p=votes.filter(x=>x==="P").length;
-    const b=votes.filter(x=>x==="B").length;
-    const predict = p>=b?"P":"B";
-    const percent = Math.round(Math.max(p,b)/4*100);
+    const last=h.at(-1);
+    Object.values(store[name]).forEach(s=>{
+      if(s?.pending){
+        s[last===s.pending?"win":"lose"]++;
+        s.pending=null;
+      }
+    });
 
-    if(s.last){
-      if(s.last===predict) s.win++;
-      else s.lose++;
-    }
-    s.last = predict;
+    let vote={B:0,P:0};
+    let aiHTML="";
 
-    if(mode==="auto" && percent<55) return;
+    Object.entries(AIs).forEach(([k,fn])=>{
+      store[name][k]??={win:0,lose:0,pending:null};
+      const p=fn(h);
+      store[name][k].pending=p;
 
-    const name = "BÀN "+t.ban+(t.cau?" – "+t.cau:"");
+      const total=store[name][k].win+store[name][k].lose;
+      const rate=total?store[name][k].win/total:0;
+      if(p && rate>=0.55) vote[p]+=rate;
 
-    const div=document.createElement("div");
-    div.className="table";
-    div.innerHTML=`
-      <div class="card-top">
-        <b>${name}</b><br>
-        Chuỗi: ${hist.slice(-12).join("")}
-      </div>
+      aiHTML+=`
+        <div class="ai-row">
+          <div>${k}</div>
+          <div class="${rate>=0.55?"good":"bad"}">
+            ${p||"-"} • ${(rate*100).toFixed(1)}%
+          </div>
+        </div>`;
+    });
 
-      <div class="card-center">
-        <div class="side">Dự đoán: ${predict}</div>
-        <div class="percent">${percent}%</div>
-      </div>
+    save();
 
-      <div class="card-bottom">
-        <div>AI tổng hợp</div>
-        <div>W ${s.win} | L ${s.lose}</div>
-      </div>
-    `;
-    tablesBox.appendChild(div);
+    const final=vote.B>vote.P?"BANKER":vote.P>vote.B?"PLAYER":"SKIP";
+    const conf=Math.max(vote.B,vote.P)*100;
+
+    let decision="❌ KHÔNG THEO",dClass="skip";
+    if(conf>=65){decision="✅ NÊN THEO";dClass="follow";}
+    else if(conf>=55){decision="⚠️ CÂN NHẮC";dClass="consider";}
+
+    app.innerHTML+=`
+      <div class="card">
+        <div class="card-head">
+          <div class="table">${name}</div>
+          <div class="conf">${final} • ${conf.toFixed(1)}%</div>
+        </div>
+
+        <div class="decision ${dClass}">${decision}</div>
+
+        <div class="history">
+          ${h.slice(-18).map(x=>`<span>${x}</span>`).join("")}
+        </div>
+
+        ${aiHTML}
+      </div>`;
   });
-
-  save();
 }
 
-/* START */
-updateModeLabel();
-fetchLatest();
-setInterval(fetchLatest, 5000);
+load();
+setInterval(load,5000);
