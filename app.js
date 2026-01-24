@@ -1,5 +1,5 @@
 // ⚠️ DÙNG CORS PROXY
-const API = "https://corsproxy.io/?https://bcrapj.vercel.app/sexy/all";
+const API = "https://thingproxy.freeboard.io/fetch/https://bcrapj.vercel.app/sexy/all";
 
 const app = document.getElementById("app");
 const loading = document.getElementById("loading");
