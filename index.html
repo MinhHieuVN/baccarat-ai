@@ -2,21 +2,45 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Baccarat Tool</title>
+  <title>Baccarat AI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header class="top">
-  <div class="logo">♠ BACCARAT <span>AI</span></div>
-  <div class="tag">MINH HIẾU TOOL AI</div>
+  <div>
+    <div class="logo">♠ BACCARAT <span>AI</span></div>
+    <div class="tag">MINH HIẾU TOOL AI</div>
+  </div>
+
+  <div id="apiStatus" class="api-status loading">
+    <span class="dot"></span>
+    <span class="text">API LOADING</span>
+  </div>
 </header>
 
-<main id="app"></main>
+<main id="app">
+
+  <!-- LOADING -->
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">AI đang phân tích dữ liệu...</div>
+  </div>
+
+  <!-- ERROR -->
+  <div id="error" class="error hidden">
+    <div class="error-title">⚠️ KHÔNG THỂ KẾT NỐI API</div>
+    <div class="error-desc">
+      API hiện không phản hồi hoặc bị chặn.<br>
+      Vui lòng thử lại sau.
+    </div>
+  </div>
+
+</main>
 
 <footer>
-  AI CHỈ GỢI Ý - HÃY QUẢN LÝ VỐN CỦA BẠN
+  AI chỉ gợi ý – hãy quản lý vốn của bạn
 </footer>
 
 <script src="app.js"></script>
